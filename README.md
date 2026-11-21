@@ -1,6 +1,12 @@
 <div align="center">
   <h1>🌊 FloodShield AI - Hyperlocal Flood Intelligence</h1>
   <p><strong>Predictive urban inundation modeling, multimodal vision flood depth estimation, safe routing, and localized disaster alerts for smart cities.</strong></p>
+
+  <p>
+    <a href="https://render.com/deploy?repo=https://github.com/PROGRAMERPARTH/FLOODSHIELD-AI">
+      <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" />
+    </a>
+  </p>
 </div>
 
 ---

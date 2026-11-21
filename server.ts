@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -15,6 +16,14 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 // Body parsers - allow larger payloads for base64 flood image uploads
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+
+// Health Check Endpoints
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', service: 'floodshield-ai' });
+});
+app.get('/health', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', service: 'floodshield-ai' });
+});
 
 // Shared Gemini Client
 let geminiAi: GoogleGenAI | null = null;

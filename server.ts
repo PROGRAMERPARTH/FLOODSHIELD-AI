@@ -33,6 +33,42 @@ if (process.env.GEMINI_API_KEY) {
   }
 }
 
+const GEMINI_MODELS = [
+  process.env.GEMINI_MODEL,
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+].filter(Boolean) as string[];
+
+async function generateWithFallback(
+  contents: unknown,
+  config?: Record<string, unknown>
+): Promise<{ text: string; modelUsed: string }> {
+  if (!geminiAi) {
+    throw new Error('GoogleGenAI client is not initialized.');
+  }
+
+  let lastError: unknown = null;
+  for (const model of GEMINI_MODELS) {
+    try {
+      const response = await geminiAi.models.generateContent({
+        model,
+        contents: contents as any,
+        config: config as any,
+      });
+      return {
+        text: (response.text ?? '{}').trim(),
+        modelUsed: model,
+      };
+    } catch (err: unknown) {
+      console.warn(`Gemini generation on model ${model} failed, trying next:`, err instanceof Error ? err.message : err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('All Gemini models failed');
+}
+
 // Simple in-memory TTL cache + in-flight deduplication to prevent redundant Gemini calls & 429 rate limits
 interface CacheEntry<T> {
   value: T;
@@ -187,10 +223,9 @@ Return strictly valid JSON with this exact schema:
   "aiObservationSummaryMarathi": string
 }`;
 
-    const parsed = await runDeduplicated(cacheKey, async () => {
-      const response = await geminiAi!.models.generateContent({
-        model: 'gemini-4-hydrogen',
-        contents: {
+    const { parsed, modelUsed } = await runDeduplicated(cacheKey, async () => {
+      const { text, modelUsed } = await generateWithFallback(
+        {
           parts: [
             {
               inlineData: {
@@ -203,16 +238,15 @@ Return strictly valid JSON with this exact schema:
             },
           ],
         },
-        config: {
+        {
           responseMimeType: 'application/json',
-        },
-      });
+        }
+      );
 
-      const rawText = (response.text ?? '{}').trim();
-      return JSON.parse(rawText);
+      return { parsed: JSON.parse(text), modelUsed };
     });
 
-    return res.json({ success: true, analysis: parsed, source: 'gemini-4-hydrogen' });
+    return res.json({ success: true, analysis: parsed, source: modelUsed });
   } catch (error: unknown) {
     const mapped = parseGeminiError(error);
     return res.status(mapped.status).json({ error: mapped.message });
@@ -261,20 +295,15 @@ Return strictly valid JSON:
   "audioAnnouncementScriptMarathi": "string"
 }`;
 
-    const parsed = await runDeduplicated(cacheKey, async () => {
-      const response = await geminiAi!.models.generateContent({
-        model: 'gemini-4-hydrogen',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-        },
+    const { parsed, modelUsed } = await runDeduplicated(cacheKey, async () => {
+      const { text, modelUsed } = await generateWithFallback(prompt, {
+        responseMimeType: 'application/json',
       });
 
-      const rawText = (response.text ?? '{}').trim();
-      return JSON.parse(rawText);
+      return { parsed: JSON.parse(text), modelUsed };
     });
 
-    return res.json({ success: true, alert: parsed, source: 'gemini-4-hydrogen' });
+    return res.json({ success: true, alert: parsed, source: modelUsed });
   } catch (error: unknown) {
     const mapped = parseGeminiError(error);
     return res.status(mapped.status).json({ error: mapped.message });
@@ -328,20 +357,15 @@ Return strictly valid JSON:
   "citizenAdvisory": string
 }`;
 
-    const parsed = await runDeduplicated(cacheKey, async () => {
-      const response = await geminiAi!.models.generateContent({
-        model: 'gemini-4-hydrogen',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-        },
+    const { parsed, modelUsed } = await runDeduplicated(cacheKey, async () => {
+      const { text, modelUsed } = await generateWithFallback(prompt, {
+        responseMimeType: 'application/json',
       });
 
-      const rawText = (response.text ?? '{}').trim();
-      return JSON.parse(rawText);
+      return { parsed: JSON.parse(text), modelUsed };
     });
 
-    return res.json({ success: true, prediction: parsed, source: 'gemini-4-hydrogen' });
+    return res.json({ success: true, prediction: parsed, source: modelUsed });
   } catch (error: unknown) {
     const mapped = parseGeminiError(error);
     return res.status(mapped.status).json({ error: mapped.message });

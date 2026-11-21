@@ -1,7 +1,8 @@
 {
-  "name": "react-example",
+  "name": "floodshield-ai-hyperlocal-flood-intelligence",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Hyperlocal urban flood intelligence combining rainfall forecasts, road segment vulnerability modeling, multimodal citizen image depth analysis, flood-safe alternative routing, and localized Marathi alerts.",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",

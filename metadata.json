@@ -1,0 +1,6 @@
+{
+  "name": "FloodShield AI - Hyperlocal Flood Intelligence",
+  "description": "Hyperlocal urban flood intelligence combining rainfall forecasts, road segment vulnerability modeling, multimodal citizen image depth analysis, flood-safe alternative routing, and localized Marathi alerts.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
